@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Human/AI Product Operating Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --human:       #1a3a0f;
+    --human-mid:   #2d5c1a;
+    --human-light: #EAF3DE;
+    --human-border:#C0DD97;
+    --human-text:  #173404;
+
+    --chat:        #042C53;
+    --chat-mid:    #185FA5;
+    --chat-light:  #E6F1FB;
+    --chat-border: #B5D4F4;
+    --chat-text:   #0C447C;
+
+    --agent:       #26215C;
+    --agent-mid:   #534AB7;
+    --agent-light: #EEEDFE;
+    --agent-border:#AFA9EC;
+    --agent-text:  #3C3489;
+
+    --sub:         #0C447C;
+    --sub-mid:     #378ADD;
+    --sub-light:   #B5D4F4;
+    --sub-border:  #85B7EB;
+    --sub-text:    #042C53;
+
+    --gate-req:    #185FA5;
+    --gate-cond:   #378ADD;
+
+    --bg:          #F7F6F3;
+    --surface:     #FFFFFF;
+    --border:      #E2E0D8;
+    --text-primary:#1a1918;
+    --text-secondary:#5a5855;
+    --text-muted:  #8a8784;
+
+    --phase-define:  #EAF3DE;
+    --phase-design:  #E6F1FB;
+    --phase-execute: #EEEDFE;
+    --phase-learn:   #FAEEDA;
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  html { font-size: 14px; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Header ── */
+  .page-header {
+    background: var(--text-primary);
+    color: #fff;
+    padding: 40px 48px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 79px,
+      rgba(255,255,255,0.04) 79px,
+      rgba(255,255,255,0.04) 80px
+    );
+    pointer-events: none;
+  }
+  .header-inner { position: relative; max-width: 1100px; margin: 0 auto; }
+  .header-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+  .header-title {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .header-title strong { font-weight: 500; }
+  .header-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 300;
+  }
+  .header-meta {
+    margin-top: 28px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .header-meta-item {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Legend ── */
+  .legend-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 48px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .legend-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-right: 4px;
+  }
+  .legend-items { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-secondary); }
+  .leg-swatch { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+  .gate-sym { font-size: 11px; font-weight: 600; }
+
+  /* ── Main layout ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 32px 48px 64px; }
+
+  /* ── Column header ── */
+  .col-headers {
+    display: grid;
+    grid-template-columns: 110px 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .col-head {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+  }
+  .col-head.human { background: var(--human-light); color: var(--human-mid); border: 0.5px solid var(--human-border); }
+
+  .col-head.ai    { background: var(--chat-light);  color: var(--chat-mid);  border: 0.5px solid var(--chat-border); }
+
+  /* ── Phase rows ── */
+  .phase-block { margin-bottom: 4px; }
+  .phase-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 1fr;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .phase-tab {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 14px 8px;
+    border-radius: var(--radius-md);
+    text-align: center;
+    gap: 4px;
+    border: 0.5px solid transparent;
+  }
+  .phase-tab .pt-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.65;
+  }
+  .phase-tab .pt-name {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  .phase-tab .pt-sub {
+    font-size: 10px;
+    opacity: 0.6;
+    font-weight: 300;
+  }
+  .ph-define  { background: var(--phase-define);  color: var(--human-text);  border-color: var(--human-border); }
+  .ph-design  { background: var(--phase-design);  color: var(--chat-text);   border-color: var(--chat-border); }
+  .ph-execute { background: var(--phase-execute); color: var(--agent-text);  border-color: var(--agent-border); }
+  .ph-review  { background: var(--phase-learn);   color: #633806;            border-color: #FAC775; }
+  .ph-learn   { background: var(--phase-learn);   color: #633806;            border-color: #FAC775; }
+
+  /* ── Actor cells ── */
+  .actor-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid;
+  }
+  .actor-cell.human-bg { background: #F4FAF0; border-color: var(--human-border); }
+  .actor-cell.ai-bg    { background: #F0F6FD; border-color: var(--chat-border); }
+
+  /* ── Activity cards ── */
+  .card {
+    padding: 9px 12px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .card-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: block;
+    font-weight: 500;
+  }
+  .card-body { color: var(--text-secondary); }
+
+  .c-human {
+    background: #fff;
+    border-color: var(--human-border);
+  }
+  .c-human .card-tag { color: var(--human-mid); }
+
+  .c-chat {
+    background: #fff;
+    border-color: var(--chat-border);
+  }
+  .c-chat .card-tag { color: var(--chat-mid); }
+
+  .c-agent {
+    background: var(--chat-light);
+    border-color: var(--chat-border);
+  }
+  .c-agent .card-tag { color: var(--chat-text); }
+
+  .c-sub {
+    background: var(--sub-light);
+    border-color: var(--sub-border);
+  }
+  .c-sub .card-tag { color: var(--sub); }
+
+  .c-both {
+    background: #fff;
+    border-color: var(--human-border);
+  }
+  .c-both .card-tag { color: var(--text-secondary); }
+
+  /* ── Gate rows ── */
+  .gate-block {
+    display: grid;
+    grid-template-columns: 110px 1fr 1fr;
+    gap: 8px;
+    margin: 6px 0;
+    align-items: center;
+  }
+  .gate-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: right;
+    padding-right: 8px;
+  }
+  .gate-bar {
+    grid-column: 2 / 4;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid;
+  }
+  .gate-bar.req {
+    background: #EEF5FD;
+    border-color: var(--gate-req);
+  }
+  .gate-bar.cond {
+    background: var(--bg);
+    border-color: var(--gate-cond);
+    border-style: dashed;
+  }
+  .gate-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .gate-icon.req  { background: var(--gate-req); color: #fff; }
+  .gate-icon.cond { background: var(--chat-light); color: var(--chat-mid); border: 1px solid var(--gate-cond); }
+  .gate-text { flex: 1; }
+  .gate-text strong {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .gate-text .gate-owner {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Flow arrow ── */
+  .flow-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2px 0;
+    margin-left: 55px;
+    color: var(--border);
+  }
+  .flow-arrow svg { display: block; }
+
+  /* ── Ad hoc note ── */
+  .adhoc-note {
+    margin-top: 20px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border);
+    border-left: 3px solid var(--text-muted);
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .adhoc-note strong { color: var(--text-primary); font-weight: 500; }
+
+  /* ── Section divider label ── */
+  .section-sep {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 12px;
+  }
+  .section-sep-line { flex: 1; height: 0.5px; background: var(--border); }
+  .section-sep-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* ── Print ── */
+  @media print {
+    .legend-bar { position: static; }
+    body { background: #fff; }
+    .page-header { background: #1a1918; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .actor-cell.human-bg,
+    .actor-cell.ai-bg,
+    .card,
+    .gate-bar,
+    .phase-tab { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  @media (max-width: 800px) {
+    .page-header { padding: 28px 20px 24px; }
+    .main { padding: 20px 16px 48px; }
+    .legend-bar { padding: 12px 16px; gap: 12px; }
+    .col-headers,
+    .phase-row,
+    .gate-block { grid-template-columns: 80px 1fr 1fr; }
+    .phase-tab .pt-name { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="page-header">
+  <div class="header-inner">
+    <h1 class="header-title">Human/AI Product Operating Model</h1>
+    <p class="header-sub">Project-agnostic governance framework for human–AI product delivery</p>
+    <div class="header-meta">
+      <span class="header-meta-item">v1.5</span>
+      <span class="header-meta-item">·</span>
+      <span class="header-meta-item">Phases 1 – 4</span>
+      <span class="header-meta-item">·</span>
+      <span class="header-meta-item">7 stage gates</span>
+      <span class="header-meta-item">·</span>
+      <span class="header-meta-item">Sub-agent driven execution</span>
+    </div>
+  </div>
+</header>
+
+<!-- Legend -->
+<div class="legend-bar">
+  <span class="legend-label">Key</span>
+  <div class="legend-items">
+    <div class="legend-item">
+      <div class="leg-swatch" style="background:#F4FAF0;border:0.5px solid #C0DD97"></div>
+      Human (Human / team)
+    </div>
+    <div class="legend-item">
+      <div class="leg-swatch" style="background:#fff;border:0.5px solid #B5D4F4"></div>
+      AI Chat (Claude)
+    </div>
+    <div class="legend-item">
+      <div class="leg-swatch" style="background:#E6F1FB;border:0.5px solid #85B7EB"></div>
+      AI Agent (orchestrator)
+    </div>
+    <div class="legend-item">
+      <div class="leg-swatch" style="background:#B5D4F4;border:0.5px solid #378ADD"></div>
+      AI Sub-agent (FORGE role)
+    </div>
+    <div class="legend-item">
+      <div style="width:14px;height:14px;border-radius:50%;background:#185FA5;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff">◆</div>
+      Required gate
+    </div>
+    <div class="legend-item">
+      <div style="width:14px;height:14px;border-radius:50%;background:#E6F1FB;border:1.5px dashed #378ADD;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#185FA5">◇</div>
+      Conditional gate
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Column headers -->
+  <div class="col-headers">
+    <div></div>
+    <div class="col-head human">Human</div>
+    <div class="col-head ai">AI</div>
+  </div>
+
+  <!-- ── PHASE 1: DEFINE ── -->
+  <div class="phase-block">
+    <div class="phase-row">
+      <div class="phase-tab ph-define">
+        <span class="pt-num">Phase 1</span>
+        <span class="pt-name">Define</span>
+        <span class="pt-sub">Ideation → PRD</span>
+      </div>
+      <div class="actor-cell human-bg">
+        <div class="card c-human">
+          <span class="card-tag">Initiate &amp; lock</span>
+          <div class="card-body">Initiates project idea. Conducts structured intake interview with Claude Chat. Reviews, challenges, and edits Idea Brief, PRD, and Design Doc drafts. Locks documents at v1.0.</div>
+        </div>
+        <div class="card c-both">
+          <span class="card-tag">Handoff checklist</span>
+          <div class="card-body">Confirms PRD locked, Design Doc locked, wireframes present, architecture diagrams present, tech stack confirmed, risks reviewed.</div>
+        </div>
+      </div>
+      <div class="actor-cell ai-bg">
+        <div class="card c-chat">
+          <span class="card-tag">Claude Chat</span>
+          <div class="card-body">Runs intake interview. Generates Idea Brief. Drafts PRD (all sections incl. REQ-IDs, AC layers, risks). Drafts Design Doc (UX flows, component inventory, data model, API contracts). Flags ambiguities for the Human to resolve.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate 1 -->
+  <div class="gate-block">
+    <div class="gate-num">Gate 1</div>
+    <div class="gate-bar req">
+      <div class="gate-icon req">◆</div>
+      <div class="gate-text">
+        <strong>PRD + Design Doc locked at v1.0 · All handoff checklist items confirmed</strong>
+        <span class="gate-owner">Owner: Human · Blocker: FORGE cannot start until this gate passes</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+      <path d="M7 0 L7 12 M3 8 L7 12 L11 8" stroke="#C8C6BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- ── PHASE 2: DESIGN ── -->
+  <div class="phase-block">
+    <div class="phase-row">
+      <div class="phase-tab ph-design">
+        <span class="pt-num">Phase 2</span>
+        <span class="pt-name">Design</span>
+        <span class="pt-sub">UX + Technical</span>
+      </div>
+      <div class="actor-cell human-bg">
+        <div class="card c-human">
+          <span class="card-tag">Review &amp; approve</span>
+          <div class="card-body">Reviews wireframes and architecture diagrams. Approves or requests changes. Signs off on tech stack and data model. No design decisions made unilaterally by AI.</div>
+        </div>
+      </div>
+      <div class="actor-cell ai-bg">
+        <div class="card c-chat">
+          <span class="card-tag">Atlas (orchestrator) — session start protocol</span>
+          <div class="card-body">Reads PRD + Design Doc. Summarises: core function, all P0 REQ-IDs, tech stack, open risks. Awaits Human acknowledgement before any build begins.</div>
+        </div>
+        <div class="card c-agent">
+          <span class="card-tag">FORGE — Iris (UX) + Hector (Frontend)</span>
+          <div class="card-body">Produce wireframes (WF-SCR-01 through SCR-0n) in /wireframes/. Annotate with CMP-IDs. Default, loading, empty, and error states for each screen.</div>
+        </div>
+        <div class="card c-sub">
+          <span class="card-tag">FORGE — Cleo (Backend) + Hermes (Infra)</span>
+          <div class="card-body">Produce architecture diagram (/diagrams/). Finalise OpenAPI spec. Define data model. Confirm tech stack rationale. Surface any technical risks.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate 2 -->
+  <div class="gate-block">
+    <div class="gate-num">Gate 2</div>
+    <div class="gate-bar req">
+      <div class="gate-icon req">◆</div>
+      <div class="gate-text">
+        <strong>Human acknowledges session start summary · Wireframes and architecture diagram reviewed and approved</strong>
+        <span class="gate-owner">Owner: Human · Blocker: no build work begins until explicit acknowledgement</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+      <path d="M7 0 L7 12 M3 8 L7 12 L11 8" stroke="#C8C6BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- ── PHASE 3a: BUILD ── -->
+  <div class="section-sep">
+    <div class="section-sep-line"></div>
+    <div class="section-sep-label">Phase 3 — Execute</div>
+    <div class="section-sep-line"></div>
+  </div>
+
+  <div class="phase-block">
+    <div class="phase-row">
+      <div class="phase-tab ph-execute">
+        <span class="pt-num">Phase 3a</span>
+        <span class="pt-name">Build</span>
+        <span class="pt-sub">P0 requirements</span>
+      </div>
+      <div class="actor-cell human-bg">
+        <div class="card c-human">
+          <span class="card-tag">Ad hoc check-ins</span>
+          <div class="card-body">Available for scope questions, ambiguity escalations, and P1 confirmation requests. Does not unilaterally change PRD or Design Doc. Logs any needed deviations.</div>
+        </div>
+        <div class="card c-human">
+          <span class="card-tag">Deviation approval</span>
+          <div class="card-body">Reviews DEVIATIONS.md entries raised by FORGE. Approves or rejects scope deviations before they are built. Resolves ambiguous requirements on request.</div>
+        </div>
+      </div>
+      <div class="actor-cell ai-bg">
+        <div class="card c-agent">
+          <span class="card-tag">FORGE — Atlas (orchestrator)</span>
+          <div class="card-body">Manages build sequence against locked PRD. Assigns work to sub-agents by REQ-ID. Surfaces scope deviations and ambiguities to the Human. Never expands scope silently.</div>
+        </div>
+        <div class="card c-sub">
+          <span class="card-tag">Hector · Cleo · Hermes (sub-agents)</span>
+          <div class="card-body">Build against P0 requirements only. Hector: UI components and screens. Cleo: API server, business logic, data layer. Hermes: integrations, OAuth flows, environment config.</div>
+        </div>
+        <div class="card c-sub">
+          <span class="card-tag">Iris (sub-agent) — ongoing UX oversight</span>
+          <div class="card-body">Available to Hector for UX decisions during build. No unilateral design changes — surfaces to Human if implementation diverges from wireframes.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate 3 -->
+  <div class="gate-block">
+    <div class="gate-num">Gate 3</div>
+    <div class="gate-bar cond">
+      <div class="gate-icon cond">◇</div>
+      <div class="gate-text">
+        <strong>P1 feature confirmation (if time and complexity permit)</strong>
+        <span class="gate-owner">Owner: Human · Conditional: FORGE pauses on P1 items until confirmed; can fail with DEVIATIONS.md entry</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+      <path d="M7 0 L7 12 M3 8 L7 12 L11 8" stroke="#C8C6BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- ── PHASE 3b: QA ── -->
+  <div class="phase-block">
+    <div class="phase-row">
+      <div class="phase-tab ph-execute">
+        <span class="pt-num">Phase 3b</span>
+        <span class="pt-name">QA</span>
+        <span class="pt-sub">Acceptance criteria</span>
+      </div>
+      <div class="actor-cell human-bg">
+        <div class="card c-human">
+          <span class="card-tag">UAT &amp; spot checks</span>
+          <div class="card-body">Reviews Argus QA report. Performs user acceptance testing on end-to-end flows. Flags any failures or gaps. Final sign-off authority on QA pass.</div>
+        </div>
+      </div>
+      <div class="actor-cell ai-bg">
+        <div class="card c-sub">
+          <span class="card-tag">Argus (QA sub-agent)</span>
+          <div class="card-body">Validates every P0 acceptance criterion across all 4 layers: plain English, Given/When/Then, input→output, edge cases. Signs off each feature before it is considered done. Produces QA report per REQ-ID. Flags failures to Atlas.</div>
+        </div>
+        <div class="card c-agent">
+          <span class="card-tag">Atlas — QA orchestration</span>
+          <div class="card-body">Tracks QA status per REQ-ID. Escalates failures to the relevant sub-agent for fix. Does not mark a feature complete without Argus sign-off.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate 4 -->
+  <div class="gate-block">
+    <div class="gate-num">Gate 4</div>
+    <div class="gate-bar req">
+      <div class="gate-icon req">◆</div>
+      <div class="gate-text">
+        <strong>All P0 ACs pass Argus sign-off · Human UAT complete · No open P0 failures</strong>
+        <span class="gate-owner">Owner: Human (final) + Argus (AI) · Blocker: no release until both have signed off</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+      <path d="M7 0 L7 12 M3 8 L7 12 L11 8" stroke="#C8C6BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- ── ARCHITECTURE REVIEW ── -->
+  <div class="section-sep">
+    <div class="section-sep-line"></div>
+    <div class="section-sep-label">Gate 5 — Architecture Review</div>
+    <div class="section-sep-line"></div>
+  </div>
+
+  <div class="phase-block">
+    <div class="phase-row">
+      <div class="phase-tab ph-review">
+        <span class="pt-num">Gate 5</span>
+        <span class="pt-name">Architecture Review</span>
+        <span class="pt-sub">AI + Human</span>
+      </div>
+      <div class="actor-cell human-bg">
+        <div class="card c-human">
+          <span class="card-tag">Architecture review (mandatory)</span>
+          <div class="card-body">Reviews AI-generated architecture assessment. Validates security decisions, data handling, and constraint-specific risks. Checks scale assumptions. Makes final call on flagged risks. Documents decisions.</div>
+        </div>
+        <div class="card c-human">
+          <span class="card-tag">Risk sign-off</span>
+          <div class="card-body">Accepts, mitigates, or escalates each risk flagged by FORGE. No risk is silently ignored. Architecture approved in writing before release.</div>
+        </div>
+      </div>
+      <div class="actor-cell ai-bg">
+        <div class="card c-agent">
+          <span class="card-tag">FORGE — Hermes + Cleo (AI architecture review)</span>
+          <div class="card-body">Produces architecture review document: checks built system against Design Doc technical sections, API contracts, data model, and scale constraints. Lists any deviations from spec.</div>
+        </div>
+        <div class="card c-sub">
+          <span class="card-tag">Argus — security and compliance check</span>
+          <div class="card-body">Reviews never-do list adherence, data isolation, and constraint compliance per PRD Section 6. Flags any violations for Human review.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate 5 -->
+  <div class="gate-block">
+    <div class="gate-num">Gate 5</div>
+    <div class="gate-bar req">
+      <div class="gate-icon req">◆</div>
+      <div class="gate-text">
+        <strong>Architecture review complete · All risks documented and accepted by Human · Never-do list verified</strong>
+        <span class="gate-owner">Owner: Human · AI review alone does not satisfy this gate — human sign-off is required</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+      <path d="M7 0 L7 12 M3 8 L7 12 L11 8" stroke="#C8C6BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- ── PHASE 3c: RELEASE ── -->
+  <div class="phase-block">
+    <div class="phase-row">
+      <div class="phase-tab ph-execute">
+        <span class="pt-num">Phase 3c</span>
+        <span class="pt-name">Release</span>
+        <span class="pt-sub">Deploy + go-live</span>
+      </div>
+      <div class="actor-cell human-bg">
+        <div class="card c-human">
+          <span class="card-tag">Release decision</span>
+          <div class="card-body">Authorises deployment. Reviews end-to-end simulation results. Confirms release scope (all P0, any confirmed P1). Approves go-live.</div>
+        </div>
+      </div>
+      <div class="actor-cell ai-bg">
+        <div class="card c-sub">
+          <span class="card-tag">Hermes (sub-agent) — deployment</span>
+          <div class="card-body">Executes deployment to agreed environment. Verifies integrations live. Runs end-to-end simulation. Produces release checklist for Human review.</div>
+        </div>
+        <div class="card c-agent">
+          <span class="card-tag">Atlas — release documentation</span>
+          <div class="card-body">Finalises DEVIATIONS.md. Confirms all deviations documented with REQ-ID, reason, and resolution. Archives project files in correct folder structure.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate 6 -->
+  <div class="gate-block">
+    <div class="gate-num">Gate 6</div>
+    <div class="gate-bar req">
+      <div class="gate-icon req">◆</div>
+      <div class="gate-text">
+        <strong>End-to-end simulation passed · DEVIATIONS.md complete · Human authorises go-live</strong>
+        <span class="gate-owner">Owner: Human · Blocker: Hermes simulation results reviewed before authorisation</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+      <path d="M7 0 L7 12 M3 8 L7 12 L11 8" stroke="#C8C6BE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- ── PHASE 4: RETRO ── -->
+  <div class="phase-block">
+    <div class="phase-row">
+      <div class="phase-tab ph-learn">
+        <span class="pt-num">Phase 4</span>
+        <span class="pt-name">Learn</span>
+        <span class="pt-sub">Retro (async, 5 days)</span>
+      </div>
+      <div class="actor-cell human-bg">
+        <div class="card c-human">
+          <span class="card-tag">Retro review &amp; sign-off</span>
+          <div class="card-body">Reviews FORGE-drafted retro. Adds qualitative observations, product decisions, and strategic learnings. Approves and finalises RETRO_[project-name].md.</div>
+        </div>
+      </div>
+      <div class="actor-cell ai-bg">
+        <div class="card c-agent">
+          <span class="card-tag">Atlas — retro draft</span>
+          <div class="card-body">Drafts RETRO_[project-name].md: what was built vs scoped, all deviations with outcomes, QA findings, risks that materialised, and recommended process improvements for the next project.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate 7 -->
+  <div class="gate-block">
+    <div class="gate-num">Gate 7</div>
+    <div class="gate-bar cond">
+      <div class="gate-icon cond">◇</div>
+      <div class="gate-text">
+        <strong>RETRO_[project-name].md finalised within 5 business days</strong>
+        <span class="gate-owner">Owner: Human · Conditional: project lifecycle closes when retro is approved; can proceed if deferred with documented reason</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ad hoc note -->
+  <div class="adhoc-note">
+    <strong>Ad hoc human touchpoints (Phases 3a – 3c)</strong><br>
+    FORGE escalates to the Human when: (1) a requirement is ambiguous — do not interpret and proceed; (2) a scope deviation is needed — log in DEVIATIONS.md before building; (3) a P1 item is being considered; (4) a technical risk materialises that was not in PRD Section 8. The Human does not need to be available continuously — FORGE works autonomously and queues escalations.
+  </div>
+
+</main>
+
+</body>
+</html>
