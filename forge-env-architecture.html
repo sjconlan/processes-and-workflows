@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FORGE — Navicet Environment Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal-50:  #E1F5EE;
+    --teal-100: #9FE1CB;
+    --teal-400: #1D9E75;
+    --teal-600: #0F6E56;
+    --teal-800: #085041;
+
+    --amber-50:  #FAEEDA;
+    --amber-100: #FAC775;
+    --amber-400: #BA7517;
+    --amber-600: #854F0B;
+    --amber-800: #633806;
+
+    --coral-50:  #FAECE7;
+    --coral-100: #F5C4B3;
+    --coral-400: #D85A30;
+    --coral-600: #993C1D;
+    --coral-800: #712B13;
+
+    --gray-50:  #F1EFE8;
+    --gray-100: #D3D1C7;
+    --gray-400: #888780;
+    --gray-600: #5F5E5A;
+    --gray-800: #444441;
+
+    --ink: #1a1917;
+    --ink-muted: #5F5E5A;
+    --ink-faint: #888780;
+    --surface: #FAFAF8;
+    --border: rgba(0,0,0,0.09);
+    --border-mid: rgba(0,0,0,0.14);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--surface);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 48px 24px 80px;
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header {
+    margin-bottom: 48px;
+  }
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .header-sub {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Tier block ── */
+  .tier {
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .tier-header {
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .tier-name {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .tier-desc {
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+  .tier-badge {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .tier-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+
+  .tier-card {
+    padding: 18px 20px;
+    border-right: 1px solid var(--border);
+  }
+  .tier-card:last-child { border-right: none; }
+
+  .card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .card-rules {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .card-rules li {
+    font-size: 13px;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    line-height: 1.4;
+  }
+  .card-rules li::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .rule-allow { color: var(--ink); }
+  .rule-block { color: var(--ink-faint); text-decoration: line-through; text-decoration-color: var(--ink-faint); }
+
+  .activate-cmd {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+  .activate-alt {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 4px;
+  }
+  .blast-label {
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  /* Tier colour theming */
+  .tier-sandbox .tier-header   { background: var(--teal-50); }
+  .tier-sandbox .tier-name     { color: var(--teal-800); }
+  .tier-sandbox .tier-badge    { background: var(--teal-100); color: var(--teal-800); }
+  .tier-sandbox .card-label    { color: var(--teal-600); }
+  .tier-sandbox .card-rules li::before { background: var(--teal-400); }
+  .tier-sandbox .activate-cmd  { background: var(--teal-50); color: var(--teal-800); }
+  .tier-sandbox .blast-label   { background: var(--teal-50); color: var(--teal-800); }
+
+  .tier-preprod .tier-header   { background: var(--amber-50); }
+  .tier-preprod .tier-name     { color: var(--amber-800); }
+  .tier-preprod .tier-badge    { background: var(--amber-100); color: var(--amber-800); }
+  .tier-preprod .card-label    { color: var(--amber-600); }
+  .tier-preprod .card-rules li::before { background: var(--amber-400); }
+  .tier-preprod .activate-cmd  { background: var(--amber-50); color: var(--amber-800); }
+  .tier-preprod .blast-label   { background: var(--amber-50); color: var(--amber-800); }
+
+  .tier-prod .tier-header      { background: var(--coral-50); }
+  .tier-prod .tier-name        { color: var(--coral-800); }
+  .tier-prod .tier-badge       { background: var(--coral-100); color: var(--coral-800); }
+  .tier-prod .card-label       { color: var(--coral-600); }
+  .tier-prod .card-rules li::before { background: var(--coral-400); }
+  .tier-prod .activate-cmd     { background: var(--coral-50); color: var(--coral-800); }
+  .tier-prod .blast-label      { background: var(--coral-50); color: var(--coral-800); }
+
+  /* ── Promotion gate ── */
+  .gate {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px;
+    margin: 2px 0;
+  }
+  .gate-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-mid);
+  }
+  .gate-pill {
+    font-size: 11px;
+    color: var(--ink-faint);
+    background: var(--gray-50);
+    border: 1px solid var(--border-mid);
+    border-radius: 20px;
+    padding: 4px 12px;
+    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+  }
+  .gate-arrow {
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+
+  /* ── Git flow ── */
+  .git-section {
+    margin-top: 40px;
+  }
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 16px;
+  }
+  .git-flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .git-step {
+    flex: 1;
+    padding: 16px 20px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .git-step:last-child { border-right: none; }
+  .git-step-tier {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .git-step-cmd {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .git-step-desc {
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .git-step-sandbox { background: var(--teal-50); }
+  .git-step-sandbox .git-step-tier { color: var(--teal-600); }
+  .git-step-preprod { background: var(--amber-50); }
+  .git-step-preprod .git-step-tier { color: var(--amber-600); }
+  .git-step-prod    { background: var(--coral-50); }
+  .git-step-prod    .git-step-tier { color: var(--coral-600); }
+
+  /* ── Never-do ── */
+  .never-do {
+    margin-top: 32px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    background: var(--gray-50);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .never-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    white-space: nowrap;
+    padding-top: 1px;
+  }
+  .never-rules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .never-pill {
+    font-size: 12px;
+    color: var(--gray-800);
+    background: white;
+    border: 1px solid var(--border-mid);
+    border-radius: 6px;
+    padding: 3px 10px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-left {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-family: 'DM Mono', monospace;
+  }
+  .footer-right {
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .tier-cards { grid-template-columns: 1fr; }
+    .tier-card { border-right: none; border-bottom: 1px solid var(--border); }
+    .tier-card:last-child { border-bottom: none; }
+    .git-flow { flex-direction: column; }
+    .git-step { border-right: none; border-bottom: 1px solid var(--border); }
+    .git-step:last-child { border-bottom: none; }
+    .tier-header { flex-wrap: wrap; }
+    .tier-badge { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-eyebrow">Navicet · FORGE</div>
+    <h1>Environment architecture</h1>
+    <p class="header-sub">Three-tier Claude Code configuration for internal project work. Switch tiers using <code style="font-family:'DM Mono',monospace;font-size:13px;background:var(--gray-50);padding:1px 6px;border-radius:4px;border:1px solid var(--border-mid)">forge</code> or the activate commands below.</p>
+  </div>
+
+  <!-- TIER 1: Sandbox -->
+  <div class="tier tier-sandbox">
+    <div class="tier-header">
+      <span class="tier-name">Sandbox</span>
+      <span class="tier-desc">Safe experimentation — nothing leaves the machine</span>
+      <span class="tier-badge">Blast radius: zero</span>
+    </div>
+    <div class="tier-cards">
+      <div class="tier-card">
+        <div class="card-label">Git</div>
+        <ul class="card-rules">
+          <li class="rule-allow">git status, log, diff</li>
+          <li class="rule-allow">npm run *</li>
+          <li class="rule-block">git commit</li>
+          <li class="rule-block">git push</li>
+          <li class="rule-block">curl / wget</li>
+        </ul>
+      </div>
+      <div class="tier-card">
+        <div class="card-label">Permissions</div>
+        <ul class="card-rules">
+          <li class="rule-allow">defaultMode: default</li>
+          <li class="rule-allow">read / list / echo</li>
+          <li class="rule-block">rm -rf</li>
+          <li class="rule-block">external writes</li>
+          <li class="rule-allow">no audit log</li>
+        </ul>
+      </div>
+      <div class="tier-card">
+        <div class="card-label">Activate</div>
+        <div class="activate-cmd">activate-sandbox</div>
+        <div class="activate-alt">or select <strong>1</strong> at <code style="font-family:'DM Mono',monospace">forge</code> launch</div>
+        <div class="blast-label">Tier 1</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate 1 -->
+  <div class="gate">
+    <div class="gate-line"></div>
+    <div class="gate-pill">Gate: no runaway loops &middot; mock parity check</div>
+    <div class="gate-line"></div>
+  </div>
+
+  <!-- TIER 2: Pre-prod -->
+  <div class="tier tier-preprod">
+    <div class="tier-header">
+      <span class="tier-name">Pre-prod</span>
+      <span class="tier-desc">Real integrations on — feature branches only, fully audited</span>
+      <span class="tier-badge">Blast radius: low</span>
+    </div>
+    <div class="tier-cards">
+      <div class="tier-card">
+        <div class="card-label">Git</div>
+        <ul class="card-rules">
+          <li class="rule-allow">git commit</li>
+          <li class="rule-allow">push origin feature/*</li>
+          <li class="rule-allow">curl https://</li>
+          <li class="rule-block">push origin main</li>
+          <li class="rule-block">push origin master</li>
+        </ul>
+      </div>
+      <div class="tier-card">
+        <div class="card-label">Permissions</div>
+        <ul class="card-rules">
+          <li class="rule-allow">defaultMode: default</li>
+          <li class="rule-allow">real integrations on</li>
+          <li class="rule-allow">Bash audit log active</li>
+          <li class="rule-block">rm -rf</li>
+          <li class="rule-block">.env.prod reads</li>
+        </ul>
+      </div>
+      <div class="tier-card">
+        <div class="card-label">Activate</div>
+        <div class="activate-cmd">activate-preprod</div>
+        <div class="activate-alt">or select <strong>2</strong> at <code style="font-family:'DM Mono',monospace">forge</code> launch</div>
+        <div class="blast-label">Tier 2</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate 2 -->
+  <div class="gate">
+    <div class="gate-line"></div>
+    <div class="gate-pill">Gate: tool call coverage &middot; HITL sign-off &middot; rollback tested</div>
+    <div class="gate-line"></div>
+  </div>
+
+  <!-- TIER 3: Production -->
+  <div class="tier tier-prod">
+    <div class="tier-header">
+      <span class="tier-name">Production</span>
+      <span class="tier-desc">Full access — all actions audited, confirmation required at launch</span>
+      <span class="tier-badge">Blast radius: high</span>
+    </div>
+    <div class="tier-cards">
+      <div class="tier-card">
+        <div class="card-label">Git</div>
+        <ul class="card-rules">
+          <li class="rule-allow">all git * allowed</li>
+          <li class="rule-allow">push origin main</li>
+          <li class="rule-allow">curl https://</li>
+          <li class="rule-block">rm -rf (always)</li>
+          <li class="rule-block">.env.* reads</li>
+        </ul>
+      </div>
+      <div class="tier-card">
+        <div class="card-label">Permissions</div>
+        <ul class="card-rules">
+          <li class="rule-allow">defaultMode: default</li>
+          <li class="rule-allow">Bash + write audited</li>
+          <li class="rule-allow">DEVIATIONS.md required</li>
+          <li class="rule-block">rm -rf</li>
+          <li class="rule-block">secrets/ reads</li>
+        </ul>
+      </div>
+      <div class="tier-card">
+        <div class="card-label">Activate</div>
+        <div class="activate-cmd">activate-prod</div>
+        <div class="activate-alt">or select <strong>3</strong> at <code style="font-family:'DM Mono',monospace">forge</code> launch<br>Requires <strong>y</strong> confirmation</div>
+        <div class="blast-label">Tier 3</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Git flow -->
+  <div class="git-section">
+    <div class="section-label">Git promotion path</div>
+    <div class="git-flow">
+      <div class="git-step git-step-sandbox">
+        <div class="git-step-tier">Sandbox</div>
+        <div class="git-step-cmd">feature/* branch</div>
+        <div class="git-step-desc">Experiment freely, no commits required</div>
+      </div>
+      <div class="git-step git-step-preprod">
+        <div class="git-step-tier">Pre-prod</div>
+        <div class="git-step-cmd">git push origin feature/*</div>
+        <div class="git-step-desc">Test against real integrations</div>
+      </div>
+      <div class="git-step git-step-prod">
+        <div class="git-step-tier">Production</div>
+        <div class="git-step-cmd">git merge + push origin main</div>
+        <div class="git-step-desc">Release — all actions logged</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Never-do -->
+  <div class="never-do">
+    <div class="never-label">Never</div>
+    <div class="never-rules">
+      <span class="never-pill">rm -rf in any tier</span>
+      <span class="never-pill">read .env.* directly</span>
+      <span class="never-pill">read secrets/</span>
+      <span class="never-pill">auto-confirm on conflict without review</span>
+      <span class="never-pill">push to main from sandbox or pre-prod</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">FORGE · Navicet · v1.0</div>
+    <div class="footer-right">Add a fourth Dev/Local tier when needed — extend forge-launch.ps1</div>
+  </div>
+
+</div>
+</body>
+</html>
